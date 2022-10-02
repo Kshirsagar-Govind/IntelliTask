@@ -1,0 +1,43 @@
+router.post("/user-registration", async (req, res) => {
+  try {
+    const isExists = await Registration.findOne({
+      username: req.body.email,
+    });
+
+    if (isExists) {
+      return res.json({ message: "User Already Exists", code: 404 });
+    }
+
+    const RegistrationCopy = await new Registration({
+      name: req.body.name,
+      username: req.body.email,
+      password: req.body.password,
+      date: CurrDate.GetFormattedDateTime(),
+    }).save();
+    res.json({ code: 200, message: "Registration Successful" });
+  } catch (error) {
+    console.log(error);
+    res.json({ code: 404, message: "Registration Failed" });
+  }
+});
+
+router.get("/user-login/:username/:password", async (req, res) => {
+  try {
+    const isValid = await Registration.findOne({
+      username: req.params.username,
+    });
+    // console.log(req.params, isValid);
+
+    if (!isValid) {
+      return res.json({ message: "User Does Not Exists", code: 404 });
+    }
+    if (isValid.password == req.params.password) {
+      return res.json({ message: "Logged In", code: 200, user: isValid });
+    } else {
+      return res.json({ message: "Invalid Creds", code: 404 });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.json({ message: "User Does Not Exists", code: 404 });
+  }
+});
